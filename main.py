@@ -34,7 +34,7 @@ def setup_training_args():
         output_dir="./training_output",
         num_train_epochs=20,
         per_device_train_batch_size=2,
-        per_device_eval_batch_size=2,
+        per_device_eval_batch_size=1,
         warmup_steps=500,
         weight_decay=0.01,
         logging_dir="./logs",
@@ -44,7 +44,7 @@ def setup_training_args():
         save_total_limit=10,
         learning_rate=5e-4,
         gradient_accumulation_steps=4,
-        eval_accumulation_steps=4,
+        eval_accumulation_steps=1,
         fp16=True,
         optim="paged_adamw_8bit",
     )
@@ -135,4 +135,5 @@ if __name__ == "__main__":
 
     trainer.train()
     eval_results = trainer.evaluate()
+    # trainer.train()
     print(f"Perplexity: {math.exp(eval_results['eval_loss']):.2f}")
