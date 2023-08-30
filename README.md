@@ -31,10 +31,16 @@ To install the required packages, run:
 pip install -r requirements.txt
 ```
 
-## Example
+## Running the code in qlora:
+``sh
+pyhon main.py --int4
+``
 
-An example dataset and evaluation metric (e.g., machine translation with BLEU score) can be provided in the repository to demonstrate the usage and modification of the data processing and evaluation metric scripts.
+## Run with deepspeed
+``sh
+accelerate launch --config_file ds_zero3_cpu.yaml main.py
+``
+
 
 ## License
-
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License]().

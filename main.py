@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 from torch.nn.utils.rnn import pad_sequence
 import torch
+import argparse
 
 
 def load_quantized_model(model_name, bnb_config, device_map):
@@ -47,6 +48,7 @@ def setup_training_args():
         eval_accumulation_steps=1,
         fp16=True,
         optim="paged_adamw_8bit",
+        prediction_loss_only=True,
     )
 
 
@@ -85,16 +87,28 @@ def compute_metrics_middle_fn(eval_pred):
     return compute_metrics_fn(decoded_preds, decoded_labels)
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train a model with PEFT and BnB quantization")
+    parser.add_argument("--int4", default=False, action="store_true", help="Use int4 quantization")
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
-    bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-    )
-    tokenizer, model = load_quantized_model(
-        "meta-llama/Llama-2-7b-chat-hf", bnb_config, device_map='auto'
-    )
+    args = parse_args()
+    if args.int4:
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+        )
+        tokenizer, model = load_quantized_model(
+            "meta-llama/Llama-2-7b-chat-hf", bnb_config, device_map='auto'
+        )
+    else:
+        tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
+        model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
 
     tokenizer.add_special_tokens({"pad_token": "<pad>"})
     tokenizer.padding_side = 'right'
